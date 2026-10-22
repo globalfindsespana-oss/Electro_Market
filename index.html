@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ELECTRO MARKET</title>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --card-bg: #1c1c1e;
+            --accent: #2997ff;
+            --text: #f5f5f7;
+            --text-secondary: #86868b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text);
+            padding-bottom: 80px;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid #333;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            background: #2c2c2e;
+            color: var(--accent);
+            border: none;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .hero h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        .hero p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .catalog {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .product-card {
+            background: var(--card-bg);
+            border-radius: 18px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border: 1px solid #2c2c2e;
+        }
+
+        .product-img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            background: #111;
+        }
+
+        .product-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .product-desc {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+        }
+
+        .product-price {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        /* Modal Panel Privado & Carrito */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: #1c1c1e;
+            border-radius: 20px;
+            padding: 25px;
+            width: 100%;
+            max-width: 450px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid #333;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .close-btn {
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            background: #2c2c2e;
+            border: 1px solid #3a3a3c;
+            border-radius: 10px;
+            color: white;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+        }
+
+        /* Burbuja WhatsApp */
+        .whatsapp-bubble {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background: #25D366;
+            color: white;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            text-decoration: none;
+            z-index: 99;
+        }
+
+        .admin-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #333;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">⚡ ELECTRO MARKET</div>
+        <div class="header-btns">
+            <button class="btn" onclick="openAdmin()">🔒 Panel Privado</button>
+            <button class="btn btn-primary" onclick="openCart()">🛒 Carrito (<span id="cart-count">0</span>)</button>
+        </div>
+    </header>
+
+    <section class="hero">
+        <h1>Lo último en tecnología.</h1>
+        <p>iPhones modificados, reacondicionados y repuestos con garantía.</p>
+    </section>
+
+    <main class="catalog" id="catalog-container">
+        <!-- Los productos se cargan dinámicamente -->
+    </main>
+
+    <!-- Burbuja WhatsApp -->
+    <a href="https://wa.me/34600000000?text=Hola,%20tengo%20una%20consulta%20sobre%20Electro%20Market" class="whatsapp-bubble" target="_blank" id="wa-link">💬</a>
+
+    <!-- Modal Admin -->
+    <div class="modal" id="admin-modal">
+        <div class="modal-content">
+            <div class="modal-title">
+                <span>Panel de Control</span>
+                <span class="close-btn" onclick="closeAdmin()">✕</span>
+            </div>
+            
+            <div id="pin-screen">
+                <p style="margin-bottom: 10px; color: var(--text-secondary);">Introduce tu código privado:</p>
+                <input type="password" id="admin-pin-input" placeholder="Código PIN">
+                <button class="btn btn-primary" style="width:100%" onclick="verifyPin()">Acceder</button>
+            </div>
+
+            <div id="admin-dashboard" style="display:none;">
+                <h4 style="margin-bottom:10px;">Añadir Producto</h4>
+                <input type="text" id="p-title" placeholder="Nombre del producto (ej. iPhone XR a 17 Pro)">
+                <input type="text" id="p-desc" placeholder="Descripción breve">
+                <input type="number" id="p-price" placeholder="Precio (€)">
+                
+                <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:5px;">Foto del producto:</p>
+                <input type="file" id="p-file" accept="image/*" onchange="handleImageUpload(event)">
+                <input type="hidden" id="p-img-base64">
+                
+                <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:5px;">O URL de la imagen:</p>
+                <input type="text" id="p-url" placeholder="https://ejemplo.com/foto.jpg">
+
+                <button class="btn btn-primary" style="width:100%; margin-bottom: 20px;" onclick="saveProduct()">Publicar Producto</button>
+
+                <h4 style="margin-bottom:10px;">Gestionar Productos</h4>
+                <div id="admin-product-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Carrito / Bizum -->
+    <div class="modal" id="cart-modal">
+        <div class="modal-content">
+            <div class="modal-title">
+                <span>Tu Carrito</span>
+                <span class="close-btn" onclick="closeCart()">✕</span>
+            </div>
+
+            <div id="cart-items"></div>
+            <div style="font-weight:bold; font-size:1.2rem; margin:15px 0;" id="cart-total">Total: 0€</div>
+
+            <hr style="border-color:#333; margin: 15px 0;">
+
+            <h4>Datos para el Envío</h4>
+            <input type="text" id="client-name" placeholder="Nombre y Apellidos">
+            <input type="tel" id="client-phone" placeholder="Teléfono de contacto">
+            <input type="text" id="client-address" placeholder="Dirección completa">
+            <input type="text" id="client-cp" placeholder="Código Postal">
+            <input type="text" id="client-city" placeholder="Ciudad / Provincia">
+
+            <button class="btn btn-primary" style="width:100%; padding:15px; font-size:1rem; margin-top:10px;" onclick="processBizum()">Pagar con Bizum</button>
+            
+            <div id="bizum-instructions" style="display:none; margin-top:15px; padding:15px; background:#2c2c2e; border-radius:10px;">
+                <p style="color:#25D366; font-weight:bold;">¡Pedido registrado!</p>
+                <p style="font-size:0.85rem; margin-top:5px;">Realiza tu Bizum al número: <strong>600 000 000</strong></p>
+                <p style="font-size:0.85rem;">Concepto: <strong id="order-id">#1001</strong></p>
+                <p style="font-size:0.8rem; color:var(--text-secondary); margin-top:5px;">Una vez hecho el Bizum, confirma tu pedido por WhatsApp.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Clave de acceso
+        const ADMIN_PIN = "171094";
+
+        // Productos iniciales
+        let defaultProducts = [
+            {
+                id: 1,
+                title: "iPhone XR Modificado a 17 Pro",
+                desc: "Chasis de titanio, pantalla de alta calidad y componentes minuciosamente revisados.",
+                price: 349,
+                img: "https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?w=500"
+            }
+        ];
+
+        let products = JSON.parse(localStorage.getItem('em_products')) || defaultProducts;
+        let cart = [];
+        let tempImage = "";
+
+        function renderProducts() {
+            const container = document.getElementById('catalog-container');
+            container.innerHTML = "";
+            products.forEach(p => {
+                container.innerHTML += `
+                    <div class="product-card">
+                        <div>
+                            <img src="${p.img}" class="product-img" alt="${p.title}">
+                            <div class="product-title">${p.title}</div>
+                            <div class="product-desc">${p.desc}</div>
+                        </div>
+                        <div>
+                            <div class="product-price">${p.price}€</div>
+                            <button class="btn btn-primary" style="width:100%" onclick="addToCart(${p.id})">Añadir al Carrito</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Convertir imagen de galería
+        function handleImageUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    tempImage = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function openAdmin() {
+            document.getElementById('admin-modal').style.display = 'flex';
+        }
+
+        function closeAdmin() {
+            document.getElementById('admin-modal').style.display = 'none';
+        }
+
+        function verifyPin() {
+            const input = document.getElementById('admin-pin-input').value;
+            if (input === ADMIN_PIN) {
+                document.getElementById('pin-screen').style.display = 'none';
+                document.getElementById('admin-dashboard').style.display = 'block';
+                renderAdminList();
+            } else {
+                alert('Código PIN incorrecto');
+            }
+        }
+
+        function saveProduct() {
+            const title = document.getElementById('p-title').value;
+            const desc = document.getElementById('p-desc').value;
+            const price = document.getElementById('p-price').value;
+            const url = document.getElementById('p-url').value;
+
+            const img = tempImage || url || "https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?w=500";
+
+            if (!title || !price) {
+                alert('Por favor añade al menos el nombre y el precio');
+                return;
+            }
+
+            const newProduct = {
+                id: Date.now(),
+                title: title,
+                desc: desc,
+                price: parseFloat(price),
+                img: img
+            };
+
+            products.push(newProduct);
+            localStorage.setItem('em_products', JSON.stringify(products));
+            renderProducts();
+            renderAdminList();
+
+            // Limpiar formulario
+            document.getElementById('p-title').value = "";
+            document.getElementById('p-desc').value = "";
+            document.getElementById('p-price').value = "";
+            document.getElementById('p-url').value = "";
+            tempImage = "";
+            alert('¡Producto añadido con éxito!');
+        }
+
+        function deleteProduct(id) {
+            products = products.filter(p => p.id !== id);
+            localStorage.setItem('em_products', JSON.stringify(products));
+            renderProducts();
+            renderAdminList();
+        }
+
+        function renderAdminList() {
+            const list = document.getElementById('admin-product-list');
+            list.innerHTML = "";
+            products.forEach(p => {
+                list.innerHTML += `
+                    <div class="admin-item">
+                        <span>${p.title} - ${p.price}€</span>
+                        <button class="btn" style="color:#ff453a;" onclick="deleteProduct(${p.id})">Eliminar</button>
+                    </div>
+                `;
+            });
+        }
+
+        // Carrito
+        function addToCart(id) {
+            const p = products.find(prod => prod.id === id);
+            cart.push(p);
+            updateCartUI();
+            openCart();
+        }
+
+        function updateCartUI() {
+            document.getElementById('cart-count').innerText = cart.length;
+            const container = document.getElementById('cart-items');
+            container.innerHTML = "";
+            let total = 0;
+            cart.forEach((item, index) => {
+                total += item.price;
+                container.innerHTML += `
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                        <span>${item.title}</span>
+                        <span>${item.price}€</span>
+                    </div>
+                `;
+            });
+            document.getElementById('cart-total').innerText = `Total: ${total}€`;
+        }
+
+        function openCart() {
+            document.getElementById('cart-modal').style.display = 'flex';
+        }
+
+        function closeCart() {
+            document.getElementById('cart-modal').style.display = 'none';
+        }
+
+        function processBizum() {
+            const name = document.getElementById('client-name').value;
+            const phone = document.getElementById('client-phone').value;
+            const address = document.getElementById('client-address').value;
+
+            if (!name || !phone || !address || cart.length === 0) {
+                alert('Por favor rellena tus datos y añade productos al carrito');
+                return;
+            }
+
+            const orderNum = "#EM-" + Math.floor(1000 + Math.random() * 9000);
+            document.getElementById('order-id').innerText = orderNum;
+            document.getElementById('bizum-instructions').style.display = 'block';
+        }
+
+        // Inicializar
+        renderProducts();
+    </script>
+</body>
+</html>
