@@ -162,24 +162,31 @@
 
       <div id="admin-panel" class="hidden space-y-4">
         <div class="flex justify-between items-center border-b border-neutral-800 pb-2">
-          <h4 class="text-sm font-bold text-neutral-300">Añadir Nuevo Producto</h4>
+          <h4 id="form-title" class="text-sm font-bold text-neutral-300">Añadir Nuevo Producto</h4>
           <button onclick="logoutAdmin()" class="text-xs text-red-400 hover:text-red-300 font-medium">Cerrar Sesión</button>
         </div>
+        
+        <input type="hidden" id="edit-prod-id" value="">
         
         <input type="text" id="prod-name" placeholder="Nombre (ej. iPhone XR chasis 15 Pro)" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2 text-xs text-white">
         <input type="number" id="prod-price" placeholder="Precio en €" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2 text-xs text-white">
         
         <!-- Carga de Imagen desde el Móvil -->
         <div class="space-y-1">
-          <label class="block text-[11px] text-neutral-400">Selecciona la foto del producto:</label>
+          <label class="block text-[11px] text-neutral-400">Foto del producto (opcional si editas):</label>
           <input type="file" id="prod-file" accept="image/*" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-1.5 text-xs text-neutral-300 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500">
         </div>
 
         <textarea id="prod-desc" placeholder="Descripción breve" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2 text-xs text-white h-16"></textarea>
         
-        <button onclick="addProduct()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-lg text-xs">
-          Guardar Producto
-        </button>
+        <div class="flex gap-2">
+          <button id="btn-save-prod" onclick="saveProduct()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-lg text-xs">
+            Guardar Producto
+          </button>
+          <button id="btn-cancel-edit" onclick="resetForm()" class="hidden bg-neutral-700 hover:bg-neutral-600 text-white font-bold px-3 py-2 rounded-lg text-xs">
+            Cancelar
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -222,7 +229,11 @@
     let cart = [];
 
     function saveProducts() {
-      localStorage.setItem('em_products', JSON.stringify(products));
+      try {
+        localStorage.setItem('em_products', JSON.stringify(products));
+      } catch (e) {
+        alert("La memoria del navegador está llena. Borra algún producto antiguo o usa fotos de menor tamaño.");
+      }
     }
 
     function renderProducts() {
@@ -235,7 +246,12 @@
 
       container.innerHTML = products.map(p => `
         <div class="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden flex flex-col justify-between p-3 relative">
-          ${isAdmin ? `<button onclick="deleteProduct(${p.id})" class="absolute top-2 right-2 bg-red-600/90 hover:bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md z-10">🗑️ Borrar</button>` : ''}
+          ${isAdmin ? `
+            <div class="absolute top-2 right-2 flex gap-1 z-10">
+              <button onclick="editProduct(${p.id})" class="bg-blue-600/90 hover:bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md">✏️ Editar</button>
+              <button onclick="deleteProduct(${p.id})" class="bg-red-600/90 hover:bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md">🗑️ Borrar</button>
+            </div>
+          ` : ''}
           <img src="${p.img}" alt="${p.name}" class="w-full h-40 object-cover rounded-lg mb-3">
           <div>
             <h4 class="font-bold text-white text-sm mb-1">${p.name}</h4>
@@ -313,64 +329,121 @@
       document.getElementById('admin-panel').classList.add('hidden');
       document.getElementById('admin-badge').classList.add('hidden');
       document.getElementById('admin-pin').value = '';
+      resetForm();
       toggleAdminModal();
       renderProducts();
     }
 
-    function addProduct() {
+    // Compresión automática de imágenes enviadas desde iPhone
+    function compressImage(file, callback) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const maxDim = 600;
+
+          if (width > height) {
+            if (width > maxDim) {
+              height *= maxDim / width;
+              width = maxDim;
+            }
+          } else {
+            if (height > maxDim) {
+              width *= maxDim / height;
+              height = maxDim;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          callback(canvas.toDataURL('image/jpeg', 0.7));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function saveProduct() {
+      const editId = document.getElementById('edit-prod-id').value;
       const name = document.getElementById('prod-name').value;
       const price = parseFloat(document.getElementById('prod-price').value);
       const desc = document.getElementById('prod-desc').value;
       const fileInput = document.getElementById('prod-file');
 
-      if (!name || !price) {
-        alert('Completa al menos el nombre y el precio');
+      if (!name || isNaN(price)) {
+        alert('Por favor completa el nombre y un precio válido');
         return;
       }
 
       const defaultImg = 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=600&auto=format&fit=crop';
 
       if (fileInput.files && fileInput.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          const newProd = {
-            id: Date.now(),
-            name,
-            price,
-            img: e.target.result,
-            desc
-          };
-          saveAndRefresh(newProd);
-        };
-        reader.readAsDataURL(fileInput.files[0]);
+        compressImage(fileInput.files[0], function(compressedImg) {
+          commitProductSave(editId, name, price, desc, compressedImg);
+        });
       } else {
-        const newProd = {
-          id: Date.now(),
-          name,
-          price,
-          img: defaultImg,
-          desc
-        };
-        saveAndRefresh(newProd);
+        let existingImg = defaultImg;
+        if (editId) {
+          const p = products.find(prod => prod.id == editId);
+          if (p) existingImg = p.img;
+        }
+        commitProductSave(editId, name, price, desc, existingImg);
       }
     }
 
-    function saveAndRefresh(newProd) {
-      products.push(newProd);
+    function commitProductSave(editId, name, price, desc, img) {
+      if (editId) {
+        // Modificar existente
+        const index = products.findIndex(p => p.id == editId);
+        if (index !== -1) {
+          products[index] = { id: Number(editId), name, price, desc, img };
+        }
+      } else {
+        // Añadir nuevo
+        products.push({ id: Date.now(), name, price, desc, img });
+      }
+
       saveProducts();
       renderProducts();
+      resetForm();
+      toggleAdminModal();
+    }
+
+    function editProduct(id) {
+      const p = products.find(prod => prod.id === id);
+      if (!p) return;
+
+      document.getElementById('edit-prod-id').value = p.id;
+      document.getElementById('prod-name').value = p.name;
+      document.getElementById('prod-price').value = p.price;
+      document.getElementById('prod-desc').value = p.desc;
       
-      // Limpiar campos
-      document.getElementById('prod-name').value = '';
-      document.getElementById('prod-price').value = '';
-      document.getElementById('prod-file').value = '';
-      document.getElementById('prod-desc').value = '';
+      document.getElementById('form-title').innerText = "Editar Producto";
+      document.getElementById('btn-save-prod').innerText = "Guardar Cambios";
+      document.getElementById('btn-cancel-edit').classList.remove('hidden');
 
       toggleAdminModal();
     }
 
+    function resetForm() {
+      document.getElementById('edit-prod-id').value = '';
+      document.getElementById('prod-name').value = '';
+      document.getElementById('prod-price').value = '';
+      document.getElementById('prod-desc').value = '';
+      document.getElementById('prod-file').value = '';
+
+      document.getElementById('form-title').innerText = "Añadir Nuevo Producto";
+      document.getElementById('btn-save-prod').innerText = "Guardar Producto";
+      document.getElementById('btn-cancel-edit').classList.add('hidden');
+    }
+
     function deleteProduct(id) {
-      if (confirm('¿Seguro que quieres eliminar este producto del catálogo?')) {
+      if (confirm('¿Seguro que quieres eliminar este producto?')) {
         products = products.filter(p => p.id !== id);
         saveProducts();
         renderProducts();
