@@ -1,505 +1,346 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ELECTRO MARKET</title>
-    <style>
-        :root {
-            --bg-color: #000000;
-            --card-bg: #1c1c1e;
-            --accent: #2997ff;
-            --text: #f5f5f7;
-            --text-secondary: #86868b;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Electro Market</title>
+  
+  <!-- Soporte PWA iOS Fullscreen -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Electro Market">
+  <link rel="apple-touch-icon" href="https://img.icons8.com/isometric-line/512/flash-badge.png">
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <style>
+    body {
+      background-color: #0d0d0d;
+      color: #f3f4f6;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+    }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text);
-            padding-bottom: 80px;
-        }
+    /* Burbuja de WhatsApp abajo a la izquierda */
+    .whatsapp-float {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 1000;
+      background-color: #25D366;
+      color: white;
+      border-radius: 50px;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      font-weight: bold;
+      transition: transform 0.2s;
+    }
+    .whatsapp-float:active {
+      transform: scale(0.95);
+    }
 
-        header {
-            position: sticky;
-            top: 0;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid #333;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 100;
-        }
-
-        .logo {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .header-btns {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn {
-            background: #2c2c2e;
-            color: var(--accent);
-            border: none;
-            padding: 8px 14px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .btn-primary {
-            background: var(--accent);
-            color: white;
-        }
-
-        .hero {
-            text-align: center;
-            padding: 40px 20px;
-        }
-
-        .hero h1 {
-            font-size: 2.2rem;
-            margin-bottom: 10px;
-        }
-
-        .hero p {
-            color: var(--text-secondary);
-            font-size: 1rem;
-        }
-
-        .catalog {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 0 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-        }
-
-        .product-card {
-            background: var(--card-bg);
-            border-radius: 18px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            border: 1px solid #2c2c2e;
-        }
-
-        .product-img {
-            width: 100%;
-            height: 220px;
-            object-fit: cover;
-            border-radius: 12px;
-            margin-bottom: 15px;
-            background: #111;
-        }
-
-        .product-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .product-desc {
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            margin-bottom: 15px;
-        }
-
-        .product-price {
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 15px;
-        }
-
-        /* Modal Panel Privado & Carrito */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.85);
-            z-index: 200;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .modal-content {
-            background: #1c1c1e;
-            border-radius: 20px;
-            padding: 25px;
-            width: 100%;
-            max-width: 450px;
-            max-height: 90vh;
-            overflow-y: auto;
-            border: 1px solid #333;
-        }
-
-        .modal-title {
-            font-size: 1.3rem;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .close-btn {
-            cursor: pointer;
-            color: var(--text-secondary);
-        }
-
-        input, textarea {
-            width: 100%;
-            padding: 12px;
-            background: #2c2c2e;
-            border: 1px solid #3a3a3c;
-            border-radius: 10px;
-            color: white;
-            margin-bottom: 12px;
-            font-size: 0.9rem;
-        }
-
-        /* Burbuja WhatsApp */
-        .whatsapp-bubble {
-            position: fixed;
-            bottom: 25px;
-            left: 25px;
-            background: #25D366;
-            color: white;
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            text-decoration: none;
-            z-index: 99;
-        }
-
-        .admin-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #333;
-        }
-    </style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1a1a1a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #333;
+      border-radius: 3px;
+    }
+  </style>
 </head>
-<body>
+<body class="pb-24">
 
-    <header>
-        <div class="logo">⚡ ELECTRO MARKET</div>
-        <div class="header-btns">
-            <button class="btn" onclick="openAdmin()">🔒 Panel Privado</button>
-            <button class="btn btn-primary" onclick="openCart()">🛒 Carrito (<span id="cart-count">0</span>)</button>
-        </div>
-    </header>
-
-    <section class="hero">
-        <h1>Lo último en tecnología.</h1>
-        <p>iPhones modificados, reacondicionados y repuestos con garantía.</p>
-    </section>
-
-    <main class="catalog" id="catalog-container">
-        <!-- Los productos se cargan dinámicamente -->
-    </main>
-
-    <!-- Burbuja WhatsApp -->
-    <a href="https://wa.me/34663425205?text=Hola,%20tengo%20una%20consulta%20sobre%20Electro%20Market" class="whatsapp-bubble" target="_blank" id="wa-link">💬</a>
-
-    <!-- Modal Admin -->
-    <div class="modal" id="admin-modal">
-        <div class="modal-content">
-            <div class="modal-title">
-                <span>Panel de Control</span>
-                <span class="close-btn" onclick="closeAdmin()">✕</span>
-            </div>
-            
-            <div id="pin-screen">
-                <p style="margin-bottom: 10px; color: var(--text-secondary);">Introduce tu código privado:</p>
-                <input type="password" id="admin-pin-input" placeholder="Código PIN">
-                <button class="btn btn-primary" style="width:100%" onclick="verifyPin()">Acceder</button>
-            </div>
-
-            <div id="admin-dashboard" style="display:none;">
-                <h4 style="margin-bottom:10px;">Añadir Producto</h4>
-                <input type="text" id="p-title" placeholder="Nombre del producto (ej. iPhone XR a 17 Pro)">
-                <input type="text" id="p-desc" placeholder="Descripción breve">
-                <input type="number" id="p-price" placeholder="Precio (€)">
-                
-                <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:5px;">Foto del producto:</p>
-                <input type="file" id="p-file" accept="image/*" onchange="handleImageUpload(event)">
-                <input type="hidden" id="p-img-base64">
-                
-                <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:5px;">O URL de la imagen:</p>
-                <input type="text" id="p-url" placeholder="https://ejemplo.com/foto.jpg">
-
-                <button class="btn btn-primary" style="width:100%; margin-bottom: 20px;" onclick="saveProduct()">Publicar Producto</button>
-
-                <h4 style="margin-bottom:10px;">Gestionar Productos</h4>
-                <div id="admin-product-list"></div>
-            </div>
-        </div>
+  <!-- Header -->
+  <header class="sticky top-0 z-50 bg-black/80 backdrop-blur-md border-b border-neutral-800 px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <span class="text-xl">⚡</span>
+      <h1 class="text-xl font-bold tracking-wider text-white">ELECTRO MARKET</h1>
     </div>
-
-    <!-- Modal Carrito / Bizum -->
-    <div class="modal" id="cart-modal">
-        <div class="modal-content">
-            <div class="modal-title">
-                <span>Tu Carrito</span>
-                <span class="close-btn" onclick="closeCart()">✕</span>
-            </div>
-
-            <div id="cart-items"></div>
-            <div style="font-weight:bold; font-size:1.2rem; margin:15px 0;" id="cart-total">Total: 0€</div>
-
-            <hr style="border-color:#333; margin: 15px 0;">
-
-            <h4>Datos para el Envío</h4>
-            <input type="text" id="client-name" placeholder="Nombre y Apellidos">
-            <input type="tel" id="client-phone" placeholder="Teléfono de contacto">
-            <input type="text" id="client-address" placeholder="Dirección completa">
-            <input type="text" id="client-cp" placeholder="Código Postal">
-            <input type="text" id="client-city" placeholder="Ciudad / Provincia">
-
-            <button class="btn btn-primary" style="width:100%; padding:15px; font-size:1rem; margin-top:10px;" onclick="processBizum()">Pagar con Bizum</button>
-            
-            <div id="bizum-instructions" style="display:none; margin-top:15px; padding:15px; background:#2c2c2e; border-radius:10px;">
-                <p style="color:#25D366; font-weight:bold;">¡Pedido registrado!</p>
-                <p style="font-size:0.85rem; margin-top:5px;">Realiza tu Bizum al número: <strong>663 425 205</strong></p>
-                <p style="font-size:0.85rem;">Concepto: <strong id="order-id">#1001</strong></p>
-                <p style="font-size:0.8rem; color:var(--text-secondary); margin-top:5px;">Una vez hecho el Bizum, confirma tu pedido por WhatsApp.</p>
-            </div>
-        </div>
+    <div class="flex gap-2">
+      <button onclick="toggleAdminModal()" class="bg-neutral-800 hover:bg-neutral-700 text-xs px-3 py-2 rounded-lg text-neutral-300 font-medium">
+        🔒 Panel Privado
+      </button>
+      <button onclick="toggleCartModal()" class="bg-blue-600 hover:bg-blue-500 text-xs px-3 py-2 rounded-lg text-white font-bold flex items-center gap-1">
+        🛒 Carrito (<span id="cart-count">0</span>)
+      </button>
     </div>
+  </header>
 
-    <script>
-        // Clave de acceso
-        const ADMIN_PIN = "171094";
+  <!-- Hero Banner -->
+  <section class="p-6 text-center border-b border-neutral-800 bg-gradient-to-b from-neutral-900 to-black">
+    <h2 class="text-3xl font-extrabold mb-2 text-white">Lo último en tecnología.</h2>
+    <p class="text-sm text-neutral-400 max-w-md mx-auto">iPhones modificados, reacondicionados y repuestos con garantía.</p>
+  </section>
 
-        // Productos iniciales
-        let defaultProducts = [
-            {
-                id: 1,
-                title: "iPhone XR Modificado a 17 Pro",
-                desc: "Chasis de titanio, pantalla de alta calidad y componentes minuciosamente revisados.",
-                price: 349,
-                img: "https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?w=500"
-            }
-        ];
+  <!-- Catálogo -->
+  <main class="max-w-4xl mx-auto p-4">
+    <h3 class="text-lg font-bold mb-4 text-neutral-200">Productos Disponibles</h3>
+    <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <!-- Los productos se cargan dinámicamente -->
+    </div>
+  </main>
 
-        let products = JSON.parse(localStorage.getItem('em_products')) || defaultProducts;
-        let cart = [];
-        let tempImage = "";
+  <!-- Botón Flotante WhatsApp (Abajo a la Izquierda) -->
+  <a href="https://wa.me/34663425205?text=Hola,%20tengo%20una%20consulta%20sobre%20Electro%20Market" target="_blank" class="whatsapp-float">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/>
+    </svg>
+    <span>WhatsApp</span>
+  </a>
 
-        function renderProducts() {
-            const container = document.getElementById('catalog-container');
-            container.innerHTML = "";
-            products.forEach(p => {
-                container.innerHTML += `
-                    <div class="product-card">
-                        <div>
-                            <img src="${p.img}" class="product-img" alt="${p.title}">
-                            <div class="product-title">${p.title}</div>
-                            <div class="product-desc">${p.desc}</div>
-                        </div>
-                        <div>
-                            <div class="product-price">${p.price}€</div>
-                            <button class="btn btn-primary" style="width:100%" onclick="addToCart(${p.id})">Añadir al Carrito</button>
-                        </div>
-                    </div>
-                `;
-            });
-        }
+  <!-- Modal Carrito -->
+  <div id="cart-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex justify-center items-end sm:items-center p-0 sm:p-4">
+    <div class="bg-neutral-900 border border-neutral-800 w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-6 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-4 border-b border-neutral-800 pb-3">
+        <h3 class="text-lg font-bold text-white">Tu Carrito</h3>
+        <button onclick="toggleCartModal()" class="text-neutral-400 hover:text-white text-xl">✕</button>
+      </div>
+      
+      <div id="cart-items" class="space-y-3 mb-4">
+        <!-- Ítems del carrito -->
+      </div>
 
-        // Convertir imagen de galería
-        function handleImageUpload(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    tempImage = event.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
-        }
+      <div class="border-t border-neutral-800 pt-3 mb-4">
+        <div class="flex justify-between font-bold text-white text-lg">
+          <span>Total:</span>
+          <span id="cart-total">0€</span>
+        </div>
+      </div>
 
-        function openAdmin() {
-            document.getElementById('admin-modal').style.display = 'flex';
-        }
+      <!-- Formulario Cliente -->
+      <div class="space-y-3">
+        <input type="text" id="client-name" placeholder="Nombre completo" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+        <input type="tel" id="client-phone" placeholder="Teléfono" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+        <input type="text" id="client-address" placeholder="Dirección de envío" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+        
+        <button onclick="processOrder()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg text-sm transition">
+          Confirmar Pedido (Bizum)
+        </button>
+      </div>
 
-        function closeAdmin() {
-            document.getElementById('admin-modal').style.display = 'none';
-        }
+      <!-- Instrucciones Bizum -->
+      <div id="bizum-instructions" class="hidden mt-4 p-4 bg-neutral-800 border border-blue-500/40 rounded-xl text-center space-y-2">
+        <p class="text-xs text-blue-400 font-bold uppercase">Instrucciones de Pago</p>
+        <p class="text-sm text-neutral-200">Realiza tu Bizum al número:</p>
+        <p class="text-2xl font-black text-white tracking-wider">663425205</p>
+        <p class="text-xs text-neutral-400">Concepto: <span id="order-id" class="font-bold text-white"></span></p>
+        <p class="text-xs text-neutral-400">Una vez enviado, pulsa abajo para avisarnos por WhatsApp.</p>
+        <button onclick="sendWhatsAppOrder()" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2">
+          Enviar Comprobante por WhatsApp
+        </button>
+      </div>
+    </div>
+  </div>
 
-        function verifyPin() {
-            const input = document.getElementById('admin-pin-input').value;
-            if (input === ADMIN_PIN) {
-                document.getElementById('pin-screen').style.display = 'none';
-                document.getElementById('admin-dashboard').style.display = 'block';
-                renderAdminList();
-            } else {
-                alert('Código PIN incorrecto');
-            }
-        }
+  <!-- Modal Admin -->
+  <div id="admin-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex justify-center items-center p-4">
+    <div class="bg-neutral-900 border border-neutral-800 w-full max-w-md rounded-2xl p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-bold text-white">Panel de Administración</h3>
+        <button onclick="toggleAdminModal()" class="text-neutral-400 hover:text-white text-xl">✕</button>
+      </div>
 
-        function saveProduct() {
-            const title = document.getElementById('p-title').value;
-            const desc = document.getElementById('p-desc').value;
-            const price = document.getElementById('p-price').value;
-            const url = document.getElementById('p-url').value;
+      <div id="admin-login" class="space-y-3">
+        <input type="password" id="admin-pin" placeholder="Introduce PIN (171094)" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2.5 text-sm text-white text-center tracking-widest">
+        <button onclick="loginAdmin()" class="w-full bg-neutral-700 hover:bg-neutral-600 text-white font-bold py-2.5 rounded-lg text-sm">
+          Acceder
+        </button>
+      </div>
 
-            const img = tempImage || url || "https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?w=500";
+      <div id="admin-panel" class="hidden space-y-4">
+        <h4 class="text-sm font-bold text-neutral-300 border-b border-neutral-800 pb-2">Añadir Nuevo Producto</h4>
+        <input type="text" id="prod-name" placeholder="Nombre (ej. iPhone XR chasis 15 Pro)" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2 text-xs text-white">
+        <input type="number" id="prod-price" placeholder="Precio en €" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2 text-xs text-white">
+        <input type="text" id="prod-img" placeholder="URL Imagen" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2 text-xs text-white">
+        <textarea id="prod-desc" placeholder="Descripción breve" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2 text-xs text-white h-16"></textarea>
+        
+        <button onclick="addProduct()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-lg text-xs">
+          Guardar Producto
+        </button>
+      </div>
+    </div>
+  </div>
 
-            if (!title || !price) {
-                alert('Por favor añade al menos el nombre y el precio');
-                return;
-            }
-
-            const newProduct = {
-                id: Date.now(),
-                title: title,
-                desc: desc,
-                price: parseFloat(price),
-                img: img
-            };
-
-            products.push(newProduct);
-            localStorage.setItem('em_products', JSON.stringify(products));
-            renderProducts();
-            renderAdminList();
-
-            // Limpiar formulario
-            document.getElementById('p-title').value = "";
-            document.getElementById('p-desc').value = "";
-            document.getElementById('p-price').value = "";
-            document.getElementById('p-url').value = "";
-            tempImage = "";
-            alert('¡Producto añadido con éxito!');
-        }
-
-        function deleteProduct(id) {
-            products = products.filter(p => p.id !== id);
-            localStorage.setItem('em_products', JSON.stringify(products));
-            renderProducts();
-            renderAdminList();
-        }
-
-        function renderAdminList() {
-            const list = document.getElementById('admin-product-list');
-            list.innerHTML = "";
-            products.forEach(p => {
-                list.innerHTML += `
-                    <div class="admin-item">
-                        <span>${p.title} - ${p.price}€</span>
-                        <button class="btn" style="color:#ff453a;" onclick="deleteProduct(${p.id})">Eliminar</button>
-                    </div>
-                `;
-            });
-        }
-
-        // Carrito
-        function addToCart(id) {
-            const p = products.find(prod => prod.id === id);
-            cart.push(p);
-            updateCartUI();
-            openCart();
-        }
-
-        function updateCartUI() {
-            document.getElementById('cart-count').innerText = cart.length;
-            const container = document.getElementById('cart-items');
-            container.innerHTML = "";
-            let total = 0;
-            cart.forEach((item, index) => {
-                total += item.price;
-                container.innerHTML += `
-                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                        <span>${item.title}</span>
-                        <span>${item.price}€</span>
-                    </div>
-                `;
-            });
-            document.getElementById('cart-total').innerText = `Total: ${total}€`;
-        }
-
-        function openCart() {
-            document.getElementById('cart-modal').style.display = 'flex';
-        }
-
-        function closeCart() {
-            document.getElementById('cart-modal').style.display = 'none';
-        }
-
-        function processBizum() {
-            const name = document.getElementById('client-name').value;
-            const phone = document.getElementById('client-phone').value;
-            const address = document.getElementById('client-address').value;
-
-            if (!name || !phone || !address || cart.length === 0) {
-                alert('Por favor rellena tus datos y añade productos al carrito');
-                return;
-            }
-
-            const orderNum = "#EM-" + Math.floor(1000 + Math.random() * 9000);
-            document.getElementById('order-id').innerText = orderNum;
-            document.getElementById('bizum-instructions').style.display = 'block';
-        }
-
-        // Inicializar
-        renderProducts();
-    </script>    const INITIAL_PRODUCTS = [
+  <!-- Lógica JavaScript -->
+  <script>
+    const INITIAL_PRODUCTS = [
       {
         id: 1,
+        name: "iPhone XR modificado a 17 pro",
+        price: 165,
+        img: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=600&auto=format&fit=crop",
+        desc: "iPhone 17 pro Naranja (128GB)"
+      },
+      {
+        id: 2,
         name: "iPhone XR Modificado a 15 Pro",
         price: 249,
         img: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=600&auto=format&fit=crop",
         desc: "Chasis 15 Pro titanio, 64GB, 100% funcional y probado."
       },
       {
-        id: 2,
+        id: 3,
         name: "Pantalla OLED iPhone 11",
         price: 39,
         img: "https://images.unsplash.com/photo-1597740985671-2a8a3b80502e?q=80&w=600&auto=format&fit=crop",
         desc: "Repuesto de calidad máxima, respuesta táctil original."
       },
       {
-        id: 3,
+        id: 4,
         name: "iPhone 11 128GB Reacondicionado",
         price: 280,
         img: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=600&auto=format&fit=crop",
         desc: "Estado impecable, batería al 100% y garantía de 6 meses."
-      },
-      {
-        id: 4,
-        name: "Batería Alta Capacidad iPhone X",
-        price: 25,
-        img: "https://images.unsplash.com/photo-1597740985671-2a8a3b80502e?q=80&w=600&auto=format&fit=crop",
-        desc: "Repuesto nuevo con kit de herramientas para montaje."
       }
     ];
 
+    let products = JSON.parse(localStorage.getItem('em_products')) || INITIAL_PRODUCTS;
+    let cart = [];
+
+    function saveProducts() {
+      localStorage.setItem('em_products', JSON.stringify(products));
+    }
+
+    function renderProducts() {
+      const container = document.getElementById('product-list');
+      container.innerHTML = products.map(p => `
+        <div class="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden flex flex-col justify-between p-3">
+          <img src="${p.img}" alt="${p.name}" class="w-full h-40 object-cover rounded-lg mb-3">
+          <div>
+            <h4 class="font-bold text-white text-sm mb-1">${p.name}</h4>
+            <p class="text-xs text-neutral-400 mb-2">${p.desc}</p>
+          </div>
+          <div class="flex justify-between items-center mt-2 border-t border-neutral-800 pt-2">
+            <span class="text-base font-extrabold text-white">${p.price}€</span>
+            <button onclick="addToCart(${p.id})" class="bg-blue-600 hover:bg-blue-500 text-white text-xs px-3 py-1.5 rounded-lg font-bold">
+              + Añadir
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function addToCart(id) {
+      const prod = products.find(p => p.id === id);
+      if (prod) {
+        cart.push(prod);
+        updateCart();
+      }
+    }
+
+    function updateCart() {
+      document.getElementById('cart-count').innerText = cart.length;
+      const cartItems = document.getElementById('cart-items');
+      
+      if (cart.length === 0) {
+        cartItems.innerHTML = '<p class="text-xs text-neutral-500 text-center py-4">El carrito está vacío.</p>';
+      } else {
+        cartItems.innerHTML = cart.map((item, index) => `
+          <div class="flex justify-between items-center bg-neutral-800 p-2 rounded-lg text-xs">
+            <span class="text-white font-medium">${item.name}</span>
+            <div class="flex items-center gap-2">
+              <span class="text-blue-400 font-bold">${item.price}€</span>
+              <button onclick="removeFromCart(${index})" class="text-red-400 font-bold px-1">✕</button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      const total = cart.reduce((sum, item) => sum + item.price, 0);
+      document.getElementById('cart-total').innerText = total + '€';
+    }
+
+    function removeFromCart(index) {
+      cart.splice(index, 1);
+      updateCart();
+    }
+
+    function toggleCartModal() {
+      document.getElementById('cart-modal').classList.toggle('hidden');
+    }
+
+    function toggleAdminModal() {
+      document.getElementById('admin-modal').classList.toggle('hidden');
+    }
+
+    function loginAdmin() {
+      const pin = document.getElementById('admin-pin').value;
+      if (pin === '171094') {
+        document.getElementById('admin-login').classList.add('hidden');
+        document.getElementById('admin-panel').classList.remove('hidden');
+      } else {
+        alert('PIN Incorrecto');
+      }
+    }
+
+    function addProduct() {
+      const name = document.getElementById('prod-name').value;
+      const price = parseFloat(document.getElementById('prod-price').value);
+      const img = document.getElementById('prod-img').value;
+      const desc = document.getElementById('prod-desc').value;
+
+      if (!name || !price) {
+        alert('Completa al menos el nombre y el precio');
+        return;
+      }
+
+      const newProd = {
+        id: Date.now(),
+        name,
+        price,
+        img: img || 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=600&auto=format&fit=crop',
+        desc
+      };
+
+      products.push(newProd);
+      saveProducts();
+      renderProducts();
+      toggleAdminModal();
+    }
+
+    function processOrder() {
+      const name = document.getElementById('client-name').value;
+      const phone = document.getElementById('client-phone').value;
+      const address = document.getElementById('client-address').value;
+
+      if (!name || !phone || !address || cart.length === 0) {
+        alert('Por favor rellena tus datos y añade productos al carrito');
+        return;
+      }
+
+      const orderNum = "#EM-" + Math.floor(1000 + Math.random() * 9000);
+      document.getElementById('order-id').innerText = orderNum;
+      document.getElementById('bizum-instructions').style.display = 'block';
+    }
+
+    function sendWhatsAppOrder() {
+      const name = document.getElementById('client-name').value;
+      const address = document.getElementById('client-address').value;
+      const orderNum = document.getElementById('order-id').innerText;
+      const total = document.getElementById('cart-total').innerText;
+
+      const msg = `Hola! He realizado un pedido en Electro Market.\n\n` +
+                  `*Nº Pedido:* ${orderNum}\n` +
+                  `*Cliente:* ${name}\n` +
+                  `*Dirección:* ${address}\n` +
+                  `*Total:* ${total}\n\n` +
+                  `Adjunto el comprobante del Bizum al 663425205.`;
+
+      window.open(`https://wa.me/34663425205?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    // Inicialización
+    renderProducts();
+    updateCart();
+  </script>
 </body>
 </html>
