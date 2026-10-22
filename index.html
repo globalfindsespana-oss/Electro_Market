@@ -215,29 +215,23 @@
         price: 280,
         img: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=600&auto=format&fit=crop",
         desc: "Estado impecable, batería al 100% y garantía de 6 meses."
+      },
+      {
+        id: 5,
+        name: "Batería Alta Capacidad iPhone X",
+        price: 25,
+        img: "https://images.unsplash.com/photo-1597740985671-2a8a3b80502e?q=80&w=600&auto=format&fit=crop",
+        desc: "Repuesto nuevo con kit de herramientas para montaje."
       }
     ];
 
-    // Cargar productos de forma segura
-    let products = INITIAL_PRODUCTS;
-    try {
-      const saved = localStorage.getItem('em_products_v2');
-      if (saved) {
-        products = JSON.parse(saved);
-      }
-    } catch(e) {
-      products = INITIAL_PRODUCTS;
-    }
-
+    // Clave limpia de sincronización
+    let products = JSON.parse(localStorage.getItem('em_products_v3')) || INITIAL_PRODUCTS;
     let isAdmin = false;
     let cart = [];
 
     function saveProducts() {
-      try {
-        localStorage.setItem('em_products_v2', JSON.stringify(products));
-      } catch (e) {
-        alert("Error al guardar en la memoria del navegador.");
-      }
+      localStorage.setItem('em_products_v3', JSON.stringify(products));
     }
 
     function renderProducts() {
@@ -259,7 +253,7 @@
           <img src="${p.img}" alt="${p.name}" class="w-full h-40 object-cover rounded-lg mb-3">
           <div>
             <h4 class="font-bold text-white text-sm mb-1">${p.name}</h4>
-            <p class="text-xs text-neutral-400 mb-2">${p.desc}</p>
+            <p class="text-xs text-neutral-400 mb-2">${p.desc || ''}</p>
           </div>
           <div class="flex justify-between items-center mt-2 border-t border-neutral-800 pt-2">
             <span class="text-base font-extrabold text-white">${p.price}€</span>
@@ -287,11 +281,11 @@
         cartItems.innerHTML = '<p class="text-xs text-neutral-500 text-center py-4">El carrito está vacío.</p>';
       } else {
         cartItems.innerHTML = cart.map((item, index) => `
-          <div class="flex justify-between items-center bg-neutral-800 p-2 rounded-lg text-xs">
+          <div class="flex justify-between items-center bg-neutral-800 p-2.5 rounded-lg text-xs">
             <span class="text-white font-medium">${item.name}</span>
             <div class="flex items-center gap-2">
               <span class="text-blue-400 font-bold">${item.price}€</span>
-              <button onclick="removeFromCart(${index})" class="text-red-400 font-bold px-1">✕</button>
+              <button onclick="removeFromCart(${index})" class="text-red-400 font-bold px-1 text-sm">✕</button>
             </div>
           </div>
         `).join('');
@@ -365,10 +359,10 @@
       if (editId) {
         const index = products.findIndex(p => p.id == editId);
         if (index !== -1) {
-          products[index] = { id: Number(editId), name, price, desc, img: finalImg };
+          products[index] = { id: Number(editId), name: name, price: price, desc: desc, img: finalImg };
         }
       } else {
-        products.push({ id: Date.now(), name, price, desc, img: finalImg });
+        products.push({ id: Date.now(), name: name, price: price, desc: desc, img: finalImg });
       }
 
       saveProducts();
@@ -385,7 +379,7 @@
       document.getElementById('prod-name').value = p.name;
       document.getElementById('prod-price').value = p.price;
       document.getElementById('prod-img').value = p.img.startsWith('data:') ? '' : p.img;
-      document.getElementById('prod-desc').value = p.desc;
+      document.getElementById('prod-desc').value = p.desc || '';
       
       document.getElementById('form-title').innerText = "Editar Producto";
       document.getElementById('btn-cancel-edit').classList.remove('hidden');
