@@ -86,7 +86,10 @@
 
   <!-- Catálogo -->
   <main class="max-w-4xl mx-auto p-4">
-    <h3 class="text-base font-bold mb-4 text-neutral-200">Productos Disponibles</h3>
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-base font-bold text-neutral-200">Productos Disponibles</h3>
+      <span id="admin-badge" class="hidden text-xs bg-red-900/60 text-red-400 border border-red-700/50 px-2 py-0.5 rounded-full font-bold">Modo Admin Activo</span>
+    </div>
     <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <!-- Los productos se cargan dinámicamente -->
     </div>
@@ -158,7 +161,10 @@
       </div>
 
       <div id="admin-panel" class="hidden space-y-4">
-        <h4 class="text-sm font-bold text-neutral-300 border-b border-neutral-800 pb-2">Añadir Nuevo Producto</h4>
+        <div class="flex justify-between items-center border-b border-neutral-800 pb-2">
+          <h4 class="text-sm font-bold text-neutral-300">Añadir Nuevo Producto</h4>
+          <button onclick="logoutAdmin()" class="text-xs text-red-400 hover:text-red-300 font-medium">Cerrar Sesión</button>
+        </div>
         <input type="text" id="prod-name" placeholder="Nombre (ej. iPhone XR chasis 15 Pro)" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2 text-xs text-white">
         <input type="number" id="prod-price" placeholder="Precio en €" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2 text-xs text-white">
         <input type="text" id="prod-img" placeholder="URL Imagen" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2 text-xs text-white">
@@ -205,6 +211,7 @@
     ];
 
     let products = JSON.parse(localStorage.getItem('em_products')) || INITIAL_PRODUCTS;
+    let isAdmin = false;
     let cart = [];
 
     function saveProducts() {
@@ -213,8 +220,15 @@
 
     function renderProducts() {
       const container = document.getElementById('product-list');
+      
+      if (products.length === 0) {
+        container.innerHTML = '<p class="text-xs text-neutral-500 text-center col-span-2 py-8">No hay productos disponibles en este momento.</p>';
+        return;
+      }
+
       container.innerHTML = products.map(p => `
-        <div class="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden flex flex-col justify-between p-3">
+        <div class="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden flex flex-col justify-between p-3 relative">
+          ${isAdmin ? `<button onclick="deleteProduct(${p.id})" class="absolute top-2 right-2 bg-red-600/90 hover:bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md z-10">🗑️ Borrar</button>` : ''}
           <img src="${p.img}" alt="${p.name}" class="w-full h-40 object-cover rounded-lg mb-3">
           <div>
             <h4 class="font-bold text-white text-sm mb-1">${p.name}</h4>
@@ -276,11 +290,24 @@
     function loginAdmin() {
       const pin = document.getElementById('admin-pin').value;
       if (pin === '171094') {
+        isAdmin = true;
         document.getElementById('admin-login').classList.add('hidden');
         document.getElementById('admin-panel').classList.remove('hidden');
+        document.getElementById('admin-badge').classList.remove('hidden');
+        renderProducts();
       } else {
         alert('PIN Incorrecto');
       }
+    }
+
+    function logoutAdmin() {
+      isAdmin = false;
+      document.getElementById('admin-login').classList.remove('hidden');
+      document.getElementById('admin-panel').classList.add('hidden');
+      document.getElementById('admin-badge').classList.add('hidden');
+      document.getElementById('admin-pin').value = '';
+      toggleAdminModal();
+      renderProducts();
     }
 
     function addProduct() {
@@ -305,7 +332,22 @@
       products.push(newProd);
       saveProducts();
       renderProducts();
+      
+      // Limpiar campos del formulario
+      document.getElementById('prod-name').value = '';
+      document.getElementById('prod-price').value = '';
+      document.getElementById('prod-img').value = '';
+      document.getElementById('prod-desc').value = '';
+
       toggleAdminModal();
+    }
+
+    function deleteProduct(id) {
+      if (confirm('¿Seguro que quieres eliminar este producto del catálogo?')) {
+        products = products.filter(p => p.id !== id);
+        saveProducts();
+        renderProducts();
+      }
     }
 
     function processOrder() {
