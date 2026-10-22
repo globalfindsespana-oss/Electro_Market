@@ -160,7 +160,7 @@
         </button>
       </div>
 
-      <div id="admin-panel" class="hidden space-y-4">
+      <div id="admin-panel" class="hidden space-y-3">
         <div class="flex justify-between items-center border-b border-neutral-800 pb-2">
           <h4 id="form-title" class="text-sm font-bold text-neutral-300">Añadir Nuevo Producto</h4>
           <button onclick="logoutAdmin()" class="text-xs text-red-400 hover:text-red-300 font-medium">Cerrar Sesión</button>
@@ -168,22 +168,16 @@
         
         <input type="hidden" id="edit-prod-id" value="">
         
-        <input type="text" id="prod-name" placeholder="Nombre (ej. iPhone XR chasis 15 Pro)" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2 text-xs text-white">
-        <input type="number" id="prod-price" placeholder="Precio en €" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2 text-xs text-white">
+        <input type="text" id="prod-name" placeholder="Nombre (ej. iPhone 13 Pro)" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2.5 text-xs text-white">
+        <input type="number" id="prod-price" placeholder="Precio en €" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2.5 text-xs text-white">
+        <input type="text" id="prod-img" placeholder="URL de la imagen (o déjalo en blanco)" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2.5 text-xs text-white">
+        <textarea id="prod-desc" placeholder="Descripción breve" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2.5 text-xs text-white h-16"></textarea>
         
-        <!-- Carga de Imagen Directa -->
-        <div class="space-y-1">
-          <label class="block text-[11px] text-neutral-400">Foto del producto (opcional):</label>
-          <input type="file" id="prod-file" accept="image/*" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-1.5 text-xs text-neutral-300 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500">
-        </div>
-
-        <textarea id="prod-desc" placeholder="Descripción breve" class="w-full bg-neutral-800 border border-neutral-700 rounded-lg p-2 text-xs text-white h-16"></textarea>
-        
-        <div class="flex gap-2">
-          <button onclick="saveProduct()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-lg text-xs">
+        <div class="flex gap-2 pt-2">
+          <button onclick="saveProductDirect()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded-lg text-xs">
             Guardar Producto
           </button>
-          <button id="btn-cancel-edit" onclick="resetForm()" class="hidden bg-neutral-700 hover:bg-neutral-600 text-white font-bold px-3 py-2 rounded-lg text-xs">
+          <button id="btn-cancel-edit" onclick="resetForm()" class="hidden bg-neutral-700 hover:bg-neutral-600 text-white font-bold px-4 py-2.5 rounded-lg text-xs">
             Cancelar
           </button>
         </div>
@@ -229,11 +223,7 @@
     let cart = [];
 
     function saveProducts() {
-      try {
-        localStorage.setItem('em_products', JSON.stringify(products));
-      } catch (e) {
-        alert("Almacenamiento lleno. Usa imágenes más ligeras.");
-      }
+      localStorage.setItem('em_products', JSON.stringify(products));
     }
 
     function renderProducts() {
@@ -248,8 +238,8 @@
         <div class="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden flex flex-col justify-between p-3 relative">
           ${isAdmin ? `
             <div class="absolute top-2 right-2 flex gap-1 z-10">
-              <button onclick="editProduct(${p.id})" class="bg-blue-600/90 hover:bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md">✏️ Editar</button>
-              <button onclick="deleteProduct(${p.id})" class="bg-red-600/90 hover:bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-md">🗑️ Borrar</button>
+              <button onclick="editProduct(${p.id})" class="bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-md shadow-md">✏️ Editar</button>
+              <button onclick="deleteProduct(${p.id})" class="bg-red-600 hover:bg-red-500 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-md shadow-md">🗑️ Borrar</button>
             </div>
           ` : ''}
           <img src="${p.img}" alt="${p.name}" class="w-full h-40 object-cover rounded-lg mb-3">
@@ -334,48 +324,37 @@
       renderProducts();
     }
 
-    function saveProduct() {
+    function saveProductDirect() {
       const editId = document.getElementById('edit-prod-id').value;
-      const name = document.getElementById('prod-name').value;
+      const name = document.getElementById('prod-name').value.trim();
       const price = parseFloat(document.getElementById('prod-price').value);
-      const desc = document.getElementById('prod-desc').value;
-      const fileInput = document.getElementById('prod-file');
+      const imgInput = document.getElementById('prod-img').value.trim();
+      const desc = document.getElementById('prod-desc').value.trim();
 
       if (!name || isNaN(price)) {
-        alert('Por favor completa el nombre y un precio válido');
+        alert('Por favor introduce al menos el nombre y un precio válido.');
         return;
       }
 
       const defaultImg = 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?q=80&w=600&auto=format&fit=crop';
-
-      // Si se seleccionó una foto nueva
-      if (fileInput.files && fileInput.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          processFinalSave(editId, name, price, desc, e.target.result);
-        };
-        reader.readAsDataURL(fileInput.files[0]);
-      } else {
-        // Mantener imagen anterior (si se edita) o poner por defecto (si es nuevo)
-        let imgToUse = defaultImg;
+      
+      let finalImg = imgInput;
+      if (!finalImg) {
         if (editId) {
           const existing = products.find(p => p.id == editId);
-          if (existing) imgToUse = existing.img;
+          finalImg = existing ? existing.img : defaultImg;
+        } else {
+          finalImg = defaultImg;
         }
-        processFinalSave(editId, name, price, desc, imgToUse);
       }
-    }
 
-    function processFinalSave(editId, name, price, desc, img) {
       if (editId) {
-        // Editar existente
         const index = products.findIndex(p => p.id == editId);
         if (index !== -1) {
-          products[index] = { id: Number(editId), name, price, desc, img };
+          products[index] = { id: Number(editId), name, price, desc, img: finalImg };
         }
       } else {
-        // Añadir nuevo
-        products.push({ id: Date.now(), name, price, desc, img });
+        products.push({ id: Date.now(), name, price, desc, img: finalImg });
       }
 
       saveProducts();
@@ -391,6 +370,7 @@
       document.getElementById('edit-prod-id').value = p.id;
       document.getElementById('prod-name').value = p.name;
       document.getElementById('prod-price').value = p.price;
+      document.getElementById('prod-img').value = p.img.startsWith('data:') ? '' : p.img;
       document.getElementById('prod-desc').value = p.desc;
       
       document.getElementById('form-title').innerText = "Editar Producto";
@@ -403,8 +383,8 @@
       document.getElementById('edit-prod-id').value = '';
       document.getElementById('prod-name').value = '';
       document.getElementById('prod-price').value = '';
+      document.getElementById('prod-img').value = '';
       document.getElementById('prod-desc').value = '';
-      document.getElementById('prod-file').value = '';
 
       document.getElementById('form-title').innerText = "Añadir Nuevo Producto";
       document.getElementById('btn-cancel-edit').classList.add('hidden');
