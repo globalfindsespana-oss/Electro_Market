@@ -218,18 +218,32 @@
       }
     ];
 
-    let products = JSON.parse(localStorage.getItem('em_products')) || INITIAL_PRODUCTS;
+    // Cargar productos de forma segura
+    let products = INITIAL_PRODUCTS;
+    try {
+      const saved = localStorage.getItem('em_products_v2');
+      if (saved) {
+        products = JSON.parse(saved);
+      }
+    } catch(e) {
+      products = INITIAL_PRODUCTS;
+    }
+
     let isAdmin = false;
     let cart = [];
 
     function saveProducts() {
-      localStorage.setItem('em_products', JSON.stringify(products));
+      try {
+        localStorage.setItem('em_products_v2', JSON.stringify(products));
+      } catch (e) {
+        alert("Error al guardar en la memoria del navegador.");
+      }
     }
 
     function renderProducts() {
       const container = document.getElementById('product-list');
       
-      if (products.length === 0) {
+      if (!products || products.length === 0) {
         container.innerHTML = '<p class="text-xs text-neutral-500 text-center col-span-2 py-8">No hay productos disponibles.</p>';
         return;
       }
